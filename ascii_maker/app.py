@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import platform
+import subprocess
 from pathlib import Path
 from typing import Iterator
 
@@ -135,6 +137,7 @@ class AsciiMakerApp(App):
         Binding("q", "quit", "Quit", priority=True),
         Binding("space", "play_pause", "Play/Pause", priority=True),
         Binding("s", "save", "Save", priority=True),
+        Binding("c", "copy", "Copy", priority=True),
         Binding("o", "open_file", "Open", priority=True),
         Binding("left", "prev_frame", "Prev Frame", priority=True),
         Binding("right", "next_frame", "Next Frame", priority=True),
@@ -369,6 +372,38 @@ class AsciiMakerApp(App):
         except Exception as e:
             if not worker.is_cancelled:
                 self.call_from_thread(self._update_status, f"Save error: {e}")
+
+    def action_copy(self) -> None:
+        """Copy the current frame's ASCII art to the system clipboard."""
+        preview = self.query_one(AsciiPreview)
+        frame = preview.current_frame
+        if frame is None:
+            self._update_status("No frame to copy")
+            return
+
+        text = "\n".join(frame.lines)
+        try:
+            system = platform.system()
+            if system == "Darwin":
+                proc = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE)
+            elif system == "Linux":
+                proc = subprocess.Popen(
+                    ["xclip", "-selection", "clipboard"], stdin=subprocess.PIPE
+                )
+            elif system == "Windows":
+                proc = subprocess.Popen(["clip"], stdin=subprocess.PIPE)
+            else:
+                self._update_status("Clipboard not supported on this platform")
+                return
+            proc.communicate(text.encode("utf-8"))
+            if proc.returncode == 0:
+                self._update_status(f"Copied frame {frame.index + 1} to clipboard")
+            else:
+                self._update_status("Failed to copy to clipboard")
+        except FileNotFoundError:
+            self._update_status("Clipboard tool not found (pbcopy/xclip/clip)")
+        except Exception as e:
+            self._update_status(f"Copy failed: {e}")
 
     def action_open_file(self) -> None:
         # Simple input-based file open

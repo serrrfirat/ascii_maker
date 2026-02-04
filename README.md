@@ -12,7 +12,7 @@ Convert GIF/MP4 to ASCII art or Floyd-Steinberg dithered animations. Includes an
 
 Source GIF:
 
-![Source](demo/hulkenberg.gif)
+![Source](demo/mourinho.gif)
 
 **Simple charset** (`--charset simple`):
 
@@ -48,7 +48,7 @@ Requires Python 3.11+.
 ascii-maker input.gif
 
 # URL
-ascii-maker https://media.tenor.com/kIKCUtlep0cAAAAi/hulkenberg.gif
+ascii-maker https://media1.tenor.com/m/6r9EhGRfHVQAAAAC/jose-mourinho-ssh.gif
 ```
 
 **Keybindings:**
@@ -58,6 +58,7 @@ ascii-maker https://media.tenor.com/kIKCUtlep0cAAAAi/hulkenberg.gif
 | `Space` | Play / Pause |
 | `←` `→` | Step frame |
 | `s` | Save output |
+| `c` | Copy frame to clipboard |
 | `o` | Open file |
 | `Tab` | Toggle settings panel |
 | `q` | Quit |
