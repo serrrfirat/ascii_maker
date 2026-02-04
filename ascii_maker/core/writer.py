@@ -201,6 +201,7 @@ def save_gif(
         append_images=normalized[1:],
         duration=durations,
         loop=0,
+        disposal=2,
     )
 
 

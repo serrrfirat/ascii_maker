@@ -80,8 +80,11 @@ class GifReader:
         for i in range(self._frame_count):
             img.seek(i)
             duration = img.info.get("duration", 100)
+            disposal = img.info.get("disposal", 0)
 
-            # Handle disposal
+            # Save canvas before paste for disposal method 3 (restore previous)
+            previous = canvas.copy() if disposal == 3 else None
+
             frame = img.convert("RGBA")
             canvas.paste(frame, (0, 0), frame)
 
@@ -91,6 +94,12 @@ class GifReader:
                 index=i,
             )
 
+            # Apply disposal after yielding
+            if disposal == 2:
+                canvas = Image.new("RGBA", img.size, (0, 0, 0, 255))
+            elif disposal == 3 and previous is not None:
+                canvas = previous
+
     def seek(self, frame_idx: int) -> Frame:
         """Get a specific frame by index (composites up to that frame)."""
         img = Image.open(self.path)
@@ -98,8 +107,19 @@ class GifReader:
 
         for i in range(frame_idx + 1):
             img.seek(i)
+            disposal = img.info.get("disposal", 0)
+
+            previous = canvas.copy() if disposal == 3 else None
+
             frame = img.convert("RGBA")
             canvas.paste(frame, (0, 0), frame)
+
+            # Apply disposal for intermediate frames (not the target)
+            if i < frame_idx:
+                if disposal == 2:
+                    canvas = Image.new("RGBA", img.size, (0, 0, 0, 255))
+                elif disposal == 3 and previous is not None:
+                    canvas = previous
 
         duration = img.info.get("duration", 100)
         return Frame(
