@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ascii-maker"
+version = "0.1.0"
+description = "Convert GIF/MP4 to ASCII art or Floyd-Steinberg dithered animations"
+requires-python = ">=3.11"
+dependencies = [
+    "textual>=0.40.0",
+    "Pillow>=10.0.0",
+    "opencv-python-headless>=4.8.0",
+    "numpy>=1.24.0",
+]
+
+[project.scripts]
+ascii-maker = "ascii_maker.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["ascii_maker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
