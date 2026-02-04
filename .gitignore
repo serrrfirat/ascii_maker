@@ -12,6 +12,7 @@ build/
 htmlcov/
 *.gif
 *.mp4
+!demo/*.gif
 !tests/
 .claude/
 tasks/
