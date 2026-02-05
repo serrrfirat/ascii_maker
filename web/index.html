@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII Maker - Transform Images into Art</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Import maps for ES modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "gifuct-js": "https://esm.sh/gifuct-js@2.1.2"
+    }
+  }
+  </script>
+
+  <!-- gif.js for encoding (loaded as global) -->
+  <script src="https://unpkg.com/gif.js@0.2.0/dist/gif.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">ascii maker</span>
+      </a>
+      <div class="nav-links">
+        <a href="https://github.com/firatsertgoz/ascii_maker" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- App Section -->
+  <section class="app-section" id="app">
+    <div class="app-container">
+      <!-- Settings Sidebar -->
+      <aside class="settings-panel glass-strong">
+        <div class="settings-header">
+          <h2>Settings</h2>
+        </div>
+
+        <div class="settings-content">
+          <!-- Charset -->
+          <div class="setting-group">
+            <label class="setting-label">Character Set</label>
+            <select id="charset-select" class="setting-select">
+              <option value="simple" selected>Simple (.:-=+*#%@)</option>
+              <option value="detailed">Detailed (70+ chars)</option>
+              <option value="blocks">Blocks (▁▂▃▄▅▆▇█)</option>
+              <option value="braille">Braille (⠀⠁⠂...)</option>
+            </select>
+          </div>
+
+          <!-- Color Mode -->
+          <div class="setting-group">
+            <label class="setting-label">Color Mode</label>
+            <select id="color-mode-select" class="setting-select">
+              <option value="truecolor" selected>Full Color</option>
+              <option value="none">Monochrome</option>
+            </select>
+          </div>
+
+          <!-- Toggles -->
+          <div class="setting-group toggles">
+            <label class="toggle-wrapper">
+              <input type="checkbox" id="dither-checkbox">
+              <span class="toggle-switch"></span>
+              <span class="toggle-label">Dithering</span>
+            </label>
+            <label class="toggle-wrapper">
+              <input type="checkbox" id="invert-checkbox">
+              <span class="toggle-switch"></span>
+              <span class="toggle-label">Invert Colors</span>
+            </label>
+          </div>
+
+          <!-- Brightness -->
+          <div class="setting-group">
+            <div class="setting-label-row">
+              <label class="setting-label">Brightness</label>
+              <span class="setting-value" id="brightness-value">0</span>
+            </div>
+            <input type="range" id="brightness-slider" class="setting-slider" min="-100" max="100" value="0">
+          </div>
+
+          <!-- Contrast -->
+          <div class="setting-group">
+            <div class="setting-label-row">
+              <label class="setting-label">Contrast</label>
+              <span class="setting-value" id="contrast-value">100</span>
+            </div>
+            <input type="range" id="contrast-slider" class="setting-slider" min="0" max="200" value="100">
+          </div>
+
+          <!-- Dimensions -->
+          <div class="setting-group">
+            <label class="setting-label">Output Size</label>
+            <div class="dimension-inputs">
+              <div class="dimension-field">
+                <label>W</label>
+                <input type="number" id="width-input" value="80" min="10" max="300">
+              </div>
+              <span class="dimension-x">×</span>
+              <div class="dimension-field">
+                <label>H</label>
+                <input type="number" id="height-input" value="24" min="5" max="100">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Download -->
+        <div class="settings-footer">
+          <button class="download-btn" id="download-btn" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            <span>Download GIF</span>
+          </button>
+          <div class="download-progress" id="download-progress"></div>
+        </div>
+      </aside>
+
+      <!-- Preview Area -->
+      <div class="preview-area">
+        <div class="preview-card glass-strong">
+          <!-- Drop Zone with embedded URL input -->
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone-content">
+              <div class="drop-zone-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+              </div>
+              <p class="drop-zone-text">Drop an image or GIF here</p>
+              <p class="drop-zone-hint">or click to browse files</p>
+
+              <div class="drop-zone-divider">
+                <span>or paste a URL</span>
+              </div>
+
+              <!-- Embedded URL Input -->
+              <div class="embedded-url-input" onclick="event.stopPropagation()">
+                <input type="text" id="url-input" placeholder="https://example.com/image.gif" class="url-field">
+                <button id="url-load-btn" class="url-go-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <input type="file" id="file-input" accept="image/gif,image/png,image/jpeg,image/webp" class="hidden">
+          </div>
+
+          <!-- Preview Canvas -->
+          <div class="preview-wrapper">
+            <canvas id="preview-canvas" width="800" height="400"></canvas>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="playback-controls">
+            <button class="playback-btn" id="prev-btn" title="Previous frame" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+              </svg>
+            </button>
+            <button class="playback-btn play" id="play-btn" title="Play/Pause" disabled>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="pause-icon hidden">
+                <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+              </svg>
+            </button>
+            <button class="playback-btn" id="next-btn" title="Next frame" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+              </svg>
+            </button>
+            <div class="scrubber-container">
+              <input type="range" class="scrubber" id="frame-slider" min="0" max="0" value="0" disabled>
+            </div>
+            <span class="frame-display" id="frame-display">0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="status-dot"></span>
+          <span id="status-text">Ready — paste a URL or drop an image to begin</span>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="shortcuts">
+          <span><kbd>Space</kbd> Play/Pause</span>
+          <span><kbd>←</kbd><kbd>→</kbd> Navigate frames</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>
+        <a href="https://github.com/firatsertgoz/ascii_maker" target="_blank">ASCII Maker</a>
+        — Open source, client-side ASCII art converter
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
